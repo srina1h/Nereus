@@ -1,5 +1,5 @@
-# DiscordBoT
- A discord music bot written in Discord.js
+# Nereus
+ A multi purpose discord bot written in Discord.js
  
  You can host this bot on any cloud server.
  
@@ -12,5 +12,5 @@
  1. prefix you want for the bot 
  2. Token of the bot (from discord developer portal)
  3. Your UNIQUE youtube API Key from Google Cloud Platform (google this if not familiar)
- 4. Domain is the name of your project AS-IS
+
  
