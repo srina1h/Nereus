@@ -18,7 +18,7 @@ const queue = new Map();
 
 bot.on("warn", console.warn);
 bot.on("error", console.error);
-bot.on("ready", () => {console.log(`${bot.user.tag} has been successfully turned on!`);bot.user.setActivity('{PREFIX}help', {type: 'LISTENING'})});
+bot.on("ready", () => {console.log(`${bot.user.tag} has been successfully turned on!`);bot.user.setActivity(PREFIX+'help', {type: 'LISTENING'})});
 bot.on("shardDisconnect", (event, id) => console.log(`Shard ${id} disconnected (${event.code}) ${event}, trying to reconnect!`));
 bot.on("shardReconnecting", (id) => console.log(`Shard ${id} reconnecting...`));
 
@@ -36,15 +36,25 @@ bot.on("message", async (msg) => {
 
     if (command === "help" || command == "cmd") {
         const helpembed = new Discord.MessageEmbed()
-            .setColor("#7289DA")
-            .setAuthor(bot.user.tag, bot.user.displayAvatarURL())
-            .setDescription(`
-__**Commands List**__
-> \`play\` > **\`play [title/url]\`**
-> \`search\` > **\`search [title]\`**
-> \`skip\`, \`stop\`,  \`pause\`, \`resume\`
-> \`nowplaying\`, \`queue\`, \`volume\``)
-            .setFooter("GunnaBoT o.O");
+        .setTitle('Check out the Nereus git repository!')
+        .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
+        .setColor('0x00AE86')
+        .setDescription("The prefix for nereus is set as ' / ' in your server.")
+        .setFooter('© Nereus o.O', 'https://i.imgur.com/1rWjEeO.png')
+        .setThumbnail('https://i.imgur.com/1rWjEeO.png')
+        .setTimestamp()
+        .setURL('https://github.com/srinathsrinivasan1/Nereus')
+        .addField('/help', 'Opens this help menu.', true)
+        .addField('/play <songname/URL>', 'Plays the song searched for (or) plays from the URL directly.', true)
+        .addField('/search <song>', 'Searches for top 10 results on youtube, you can then choose what to play.', true)
+        .addField('/skip', 'Skips the currently playing song.', true)
+        .addField('/pause', 'Pauses the currently playing song.', true)
+        .addField('/resume', 'Resumes the currently paused song.', true)
+        .addField('/stop', 'Pauses the curently playing song.', true)
+        .addField('/queue', 'Displays the song queue.', true)
+        .addField('/volume <value>', 'changes the volume to a value between 1-100%.', true)
+        .addField('/nowplaying', 'Shows the song that is currently playing', true)
+        .addField('/bruh', 'Try it to find out!', true);
         msg.channel.send(helpembed);
     }
     if (command === "play" || command === "p") {
