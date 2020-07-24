@@ -34,7 +34,7 @@ const queue = new Map();
 
 bot.on("warn", console.warn);
 bot.on("error", console.error);
-bot.on("ready", () => {console.log(`${bot.user.tag} has been successfully turned on!`);bot.user.setActivity(PREFIX+'help', {type: 'LISTENING'})});
+bot.on("ready", () => {console.log(`${bot.user.tag} has been successfully turned on!`);bot.user.setActivity(PREFIX +"help on "+ bot.guilds.cache.size +" servers", {type: 'LISTENING'})});
 bot.on("shardDisconnect", (event, id) => console.log(`Shard ${id} disconnected (${event.code}) ${event}, trying to reconnect!`));
 bot.on("shardReconnecting", (id) => console.log(`Shard ${id} reconnecting...`));
 
@@ -73,8 +73,13 @@ bot.on("message", async (msg) => {
         .addField(PREFIX+'queue', 'Displays the song queue.', true)
         .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
-        .addField(PREFIX+'bruh', 'Try it to find out!', true);
+        .addField(PREFIX+'bruh', 'Try it to find out!', true)
+        .addField(PREFIX+'count', 'Check out our user base!', true);
         msg.channel.send(helpembed);
+    }
+
+    if(command === "count"){
+        return msg.channel.send("Serving the 🍹 to " + bot.users.cache.size + " users on "+ bot.guilds.cache.size + " servers.");
     }
 
     if (command === "lofi"){
@@ -276,7 +281,8 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
         .addField(PREFIX+'queue', 'Displays the song queue.', true)
         .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
-        .addField(PREFIX+'bruh', 'Try it to find out!', true);
+        .addField(PREFIX+'bruh', 'Try it to find out!', true)
+        .addField(PREFIX+'count', 'Check out our user base!', true);
         msg.author.send(helpmeembed);
     }
 });
