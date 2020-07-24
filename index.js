@@ -56,7 +56,7 @@ bot.on("message", async (msg) => {
         .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
         .setColor('0x00AE86')
         .setDescription("The prefix for nereus is set as ' / ' in your server.")
-        .setFooter('© Nereus o.O', 'https://i.imgur.com/1rWjEeO.png')
+        .setFooter('Nereus o.O', 'https://i.imgur.com/1rWjEeO.png')
         .setThumbnail('https://i.imgur.com/1rWjEeO.png')
         .setTimestamp()
         .setURL('https://github.com/srinathsrinivasan1/Nereus')
