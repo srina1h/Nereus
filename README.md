@@ -1,5 +1,5 @@
 <p align="center"><img src="https://i.imgur.com/1rWjEeOm.png"></p>
-<h1 align="center">Nereus: A Music Bot for Discord</h1>
+<h1 align="center">Nereus: A Music & LoFi Bot for Discord</h1>
 
 [![GitHub issues](https://img.shields.io/github/issues/srinathsrinivasan1/Nereus?color=blueviolet&label=Issues&logo=github)](https://github.com/srinathsrinivasan1/Nereus/issues) [![GitHub license](https://img.shields.io/github/license/srinathsrinivasan1/Nereus?color=blue&label=License&style=flat-square)](https://github.com/srinathsrinivasan1/Nereus/blob/master/LICENSE) [![GitHub stars](https://img.shields.io/github/stars/srinathsrinivasan1/Nereus?color=red&logo=github&style=flat-square)](https://github.com/srinathsrinivasan1/Nereus/stargazers)
 
