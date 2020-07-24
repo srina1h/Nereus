@@ -10,7 +10,7 @@ A Discord bot written in Discord.js that uses the YouTube API to queue music req
 ## Usage:
 * /help for the supported commands.
 
-![](./screenshots/helpmenu.png)
+![](./screenshots/help_menu.png)
 
 ## Installation:
 1. Install [ffmpeg](https://ffmpeg.org/download.html).
