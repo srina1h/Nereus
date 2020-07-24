@@ -1,4 +1,7 @@
-# Nereus: A Music Bot for Discord
+<p align="center"><img src="https://i.imgur.com/1rWjEeOm.png"></p>
+<h1 align="center">Nereus: A Music Bot for Discord</h1>
+
+[![GitHub issues](https://img.shields.io/github/issues/srinathsrinivasan1/Nereus?color=blueviolet&label=Issues&logo=github)](https://github.com/srinathsrinivasan1/Nereus/issues) [![GitHub license](https://img.shields.io/github/license/srinathsrinivasan1/Nereus?color=blue&label=License&style=flat-square)](https://github.com/srinathsrinivasan1/Nereus/blob/master/LICENSE) [![GitHub stars](https://img.shields.io/github/stars/srinathsrinivasan1/Nereus?color=red&logo=github&style=flat-square)](https://github.com/srinathsrinivasan1/Nereus/stargazers)
 
 A Discord bot written in Discord.js that uses the YouTube API to queue music requested by the user.
 
@@ -19,3 +22,7 @@ A Discord bot written in Discord.js that uses the YouTube API to queue music req
 1. Prefix you want for the bot.
 2. Token of the bot (from Discord Developer Portal).
 3. YouTube API Key from Google Cloud Platform.
+
+## Icon Credits:
+
+Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon.com.](https://www.flaticon.com/)
