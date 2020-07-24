@@ -11,6 +11,7 @@
   "dependencies": {
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
+    "node-opus": "^0.3.3",
     "server": "^1.0.29",
     "server.js": "^1.0.0",
     "simple-youtube-api": "^5.2.1",

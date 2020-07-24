@@ -55,26 +55,54 @@ bot.on("message", async (msg) => {
         .setTitle('Check out the Nereus git repository!')
         .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
         .setColor('0x00AE86')
-        .setDescription("The prefix for nereus is set as ' / ' in your server.")
+        .setDescription("The prefix for nereus is set as "+ PREFIX +" in your server.")
         .setFooter('Nereus o.O', 'https://i.imgur.com/1rWjEeO.png')
         .setThumbnail('https://i.imgur.com/1rWjEeO.png')
         .setTimestamp()
         .setURL('https://github.com/srinathsrinivasan1/Nereus')
-        .addField('/help', 'Opens this help menu.', true)
-        .addField('/helpme', 'Sends you the help menu on DM.', true)
-        .addField('/invite', 'Invite Nereus to your server !', true)
-        .addField('/play <songname/URL>', 'Plays the song searched for (or) plays from the URL directly.', true)
-        .addField('/search <song>', 'Searches for top 10 results on youtube, you can then choose what to play.', true)
-        .addField('/skip', 'Skips the currently playing song.', true)
-        .addField('/pause', 'Pauses the currently playing song.', true)
-        .addField('/resume', 'Resumes the currently paused song.', true)
-        .addField('/stop', 'Pauses the curently playing song.', true)
-        .addField('/queue', 'Displays the song queue.', true)
-        .addField('/volume <value>', 'changes the volume to a value between 1-100%.', true)
-        .addField('/nowplaying', 'Shows the song that is currently playing', true)
-        .addField('/bruh', 'Try it to find out!', true);
+        .addField(PREFIX+'help', 'Opens this help menu.', true)
+        .addField(PREFIX+'helpme', 'Sends you the help menu on DM.', true)
+        .addField(PREFIX+'invite', 'Invite Nereus to your server !', true)
+        .addField(PREFIX+'play <songname/URL>', 'Plays the song searched for (or) plays from the URL directly.', true)
+        .addField(PREFIX+'lofi', 'Play Lo-Fi music 24*7', true)
+        .addField(PREFIX+'search <song>', 'Searches for top 10 results on youtube, you can then choose what to play.', true)
+        .addField(PREFIX+'skip', 'Skips the currently playing song.', true)
+        .addField(PREFIX+'pause', 'Pauses the currently playing song.', true)
+        .addField(PREFIX+'resume', 'Resumes the currently paused song.', true)
+        .addField(PREFIX+'stop', 'Pauses the curently playing song.', true)
+        .addField(PREFIX+'queue', 'Displays the song queue.', true)
+        .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
+        .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
+        .addField(PREFIX+'bruh', 'Try it to find out!', true);
         msg.channel.send(helpembed);
     }
+
+    if (command === "lofi"){
+        const voiceChannel = msg.member.voice.channel;
+        if(!voiceChannel){
+            return msg.channel.send("You need to be in an active voice channel to play Lo-Fi Music!");
+        }
+        const permissions = voiceChannel.permissionsFor(msg.client.user);
+        if (!permissions.has("CONNECT")) {
+            return msg.channel.send(" **`CONNECT`** permission required !!");
+        }
+        if (!permissions.has("SPEAK")) {
+            return msg.channel.send("**`SPEAK`** permission required !!");
+        }
+        else{
+            try{
+                var videos = await youtube.searchVideos("lofi", 10);
+                var video = await youtube.getVideoByID(videos[0].id);
+                if(!video) return msg.channel.send("🆘  Sorry, cannot play Lo-Fi Music now!");
+            } catch (err) {
+                console.error(err);
+                return msg.channel.send("🆘  Sorry, cannot play Lo-Fi Music now!");
+            }
+            return handleVideo(video, msg, voiceChannel);
+        }
+
+    }
+
     if (command === "play" || command === "p") {
         const voiceChannel = msg.member.voice.channel;
         if (!voiceChannel) return msg.channel.send("You need to be in an active voice channel to play music!");
@@ -231,23 +259,24 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
         .setTitle('Check out the Nereus git repository!')
         .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
         .setColor('0x00AE86')
-        .setDescription("The prefix for nereus is set as ' / ' in your server.")
+        .setDescription("The prefix for nereus is set as "+ PREFIX +" in your server.")
         .setFooter('© Nereus o.O', 'https://i.imgur.com/1rWjEeO.png')
         .setThumbnail('https://i.imgur.com/1rWjEeO.png')
         .setTimestamp()
         .setURL('https://github.com/srinathsrinivasan1/Nereus')
-        .addField('/help', 'Opens this help menu.', true)
-        .addField('/invite', 'Invite Nereus to your server !', true)
-        .addField('/play <songname/URL>', 'Plays the song searched for (or) plays from the URL directly.', true)
-        .addField('/search <song>', 'Searches for top 10 results on youtube, you can then choose what to play.', true)
-        .addField('/skip', 'Skips the currently playing song.', true)
-        .addField('/pause', 'Pauses the currently playing song.', true)
-        .addField('/resume', 'Resumes the currently paused song.', true)
-        .addField('/stop', 'Pauses the curently playing song.', true)
-        .addField('/queue', 'Displays the song queue.', true)
-        .addField('/volume <value>', 'changes the volume to a value between 1-100%.', true)
-        .addField('/nowplaying', 'Shows the song that is currently playing', true)
-        .addField('/bruh', 'Try it to find out!', true);
+        .addField(PREFIX+'help', 'Opens this help menu.', true)
+        .addField(PREFIX+'invite', 'Invite Nereus to your server !', true)
+        .addField(PREFIX+'play <songname/URL>', 'Plays the song searched for (or) plays from the URL directly.', true)
+        .addField(PREFIX+'lofi', 'Play Lo-Fi music 24*7', true)
+        .addField(PREFIX+'search <song>', 'Searches for top 10 results on youtube, you can then choose what to play.', true)
+        .addField(PREFIX+'skip', 'Skips the currently playing song.', true)
+        .addField(PREFIX+'pause', 'Pauses the currently playing song.', true)
+        .addField(PREFIX+'resume', 'Resumes the currently paused song.', true)
+        .addField(PREFIX+'stop', 'Pauses the curently playing song.', true)
+        .addField(PREFIX+'queue', 'Displays the song queue.', true)
+        .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
+        .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
+        .addField(PREFIX+'bruh', 'Try it to find out!', true);
         msg.author.send(helpmeembed);
     }
 });
