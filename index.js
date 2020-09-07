@@ -48,7 +48,9 @@ bot.on("message", async (msg) => {
     const searchString = args.slice(1).join(" ");
     const url = args[1] ? args[1].replace(/<(.+)>/g, "$1") : "";
     const serverQueue = queue.get(msg.guild.id);
-
+    
+    //console.log("Your Search String:"+searchString+"\nYour URL:"+url+"\n");
+    
     msg.react('🦥');
 
     let command = msg.content.toLowerCase().split(" ")[0];
@@ -122,10 +124,10 @@ bot.on("message", async (msg) => {
         if (!permissions.has("SPEAK")) {
             return msg.channel.send("Speak permission required !!");
         }
-        if ((url === null || searchString === null) && serverQueue.playing === true){
+        if ((url === "" && searchString === "") && serverQueue.playing === true){
             return msg.channel.send("Please specify either the URL or the song name 🎶");
         }
-        if ((url === null || searchString === null) && serverQueue.playing === false){
+        if ((url === "" && searchString === "") && serverQueue.playing === false){
             if (serverQueue && !serverQueue.playing){
                 serverQueue.playing = true;
                 serverQueue.connection.dispatcher.resume();
