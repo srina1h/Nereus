@@ -1,4 +1,4 @@
-<p align="center"><img src="https://i.imgur.com/1rWjEeOm.png" width="200"></p>
+<p align="center"><img src="./screenshots/logo.png" width="200"></p>
 <h1 align="center">Nereus: A Music & LoFi Bot for Discord</h1>
 
 <p align='center'>
@@ -32,7 +32,7 @@
 * /help for the supported commands.
 
 <p align='center'>
-<img src="./screenshots/help_menu" width="450">
+<img src="./screenshots/help_menu.png" width="450">
 </p>
 
 ## Installation:
