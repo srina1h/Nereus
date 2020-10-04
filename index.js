@@ -376,6 +376,9 @@ function play(guild, song) {
         serverQueue.voiceChannel.leave();
         return queue.delete(guild.id);
     }
+    serverQueue.connection.on('disconnect', ()=>{
+        return queue.delete(guild.id);
+    });
 
     const dispatcher = serverQueue.connection.play(ytdl(song.url))
         .on("finish", () => {
