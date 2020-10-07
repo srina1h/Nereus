@@ -1,4 +1,3 @@
-const Discord = require("discord.js");
 const { Client, Util, MessageEmbed } = require("discord.js");
 const YouTube = require("simple-youtube-api");
 const ytdl = require("ytdl-core");
@@ -42,7 +41,7 @@ bot.on("shardReconnecting", (id) => console.log(`Shard ${id} reconnecting...`));
 bot.on("guildCreate", (guild) => {
     const generalChannel = guild.channels.cache.find(channel => channel.name === "general");
     if (generalChannel){
-        const helpembed = new Discord.MessageEmbed()
+        const helpembed = new MessageEmbed()
         .setTitle('Check out the Nereus git repository!')
         .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
         .setColor('0x00AE86')
@@ -88,7 +87,7 @@ bot.on("message", async (msg) => {
     command = command.slice(PREFIX.length);
 
     if (command === "help" || command == "cmd") {
-        const helpembed = new Discord.MessageEmbed()
+        const helpembed = new MessageEmbed()
         .setTitle('Check out the Nereus git repository!')
         .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
         .setColor('0x00AE86')
@@ -298,13 +297,13 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
     } else if (command === "bruh"){
         return msg.channel.send("moment");
     } else if (command === "invite"){
-        const invembed = new Discord.MessageEmbed()
+        const invembed = new MessageEmbed()
         .setColor('0x00AE86')
         .setTitle('Invite Nereus to your server!')
         .setURL('https://discord.com/api/oauth2/authorize?client_id=734801580548685884&permissions=8&scope=bot');
         return msg.author.send(invembed);
     } else if (command === "helpme") {
-        const helpmeembed = new Discord.MessageEmbed()
+        const helpmeembed = new MessageEmbed()
         .setTitle('Check out the Nereus git repository!')
         .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
         .setColor('0x00AE86')
@@ -354,6 +353,7 @@ async function handleVideo(video, msg, voiceChannel, playlist = false) {
 
         try {
             var connection = await voiceChannel.join();
+            connection.voice.setSelfDeaf(true);
             queueConstruct.connection = connection;
             play(msg.guild, queueConstruct.songs[0]);
         } catch (error) {
