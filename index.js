@@ -2,18 +2,22 @@ const { Client, Util, MessageEmbed } = require("discord.js");
 const YouTube = require("simple-youtube-api");
 const ytdl = require("ytdl-core");
 const dotenv = require("dotenv").config();
+const path = require("path");
 
 var express = require("express");
 var http = require("http");
 var app = express();
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
-app.use(express.static("public"));
 app.get("/", function (request, response) {
-    response.sendStatus(200);
+    response.render('dashboard.ejs');
+    //response.sendStatus(200);
 });
 
-var listener = app.listen(process.env.PORT, function () {
+var listener = app.listen(9000, function () {
     console.log("Your app is listening on port " + listener.address().port);
 });
 setInterval(() => {
