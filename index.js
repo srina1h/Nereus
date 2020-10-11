@@ -8,18 +8,54 @@ var express = require("express");
 var http = require("http");
 var app = express();
 
+const getTopSizes = (bot) => {
+    var res = [];
+    var other = 0, ind = 0;
+    bot.guilds.cache.forEach((g) => {
+        if(ind < 5) {
+            res.push(g.memberCount);     
+        }     
+        else {
+            other += g.membercount
+        }   
+        ind++;
+    })
+    res.push(other);
+    return res;
+}
+
+const getTopNames = (bot) => {
+    var res = [], ind = 0;
+    bot.guilds.cache.forEach((g) => {
+        if(ind < 5) {
+            res.push(g.name);     
+        }        
+        ind++;
+    })
+    res.push("Other");
+    return res;
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
-
 app.get("/", function (request, response) {
-    response.render('dashboard.ejs');
+    response.render('dashboard.ejs', {
+        stats: stats,
+        uptime: getUptime(),
+        numServers: bot.guilds.cache.size,
+        numUsers: bot.users.cache.size,
+        guildList: bot.guilds.cache,
+        biggestGuildNames: getTopNames(bot),
+        biggestGuildSizes: getTopSizes(bot)        
+    });
     //response.sendStatus(200);
 });
 
 var listener = app.listen(9000, function () {
     console.log("Your app is listening on port " + listener.address().port);
 });
+
 setInterval(() => {
     http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
 }, 270000);
@@ -32,10 +68,25 @@ const bot = new Client({
     disableMentions: "all"
 });
 
+const getUptime = () => {
+    let totalSeconds = (bot.uptime / 1000);
+    let days = Math.floor(totalSeconds / 86400);
+    totalSeconds %= 86400;
+    let hours = Math.floor(totalSeconds / 3600);
+    totalSeconds %= 3600;
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = Math.floor(totalSeconds % 60);    
+    return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+}
+
+var stats = {
+    startTime: Date.now(),
+    averagePing: 0,
+    numRequests: 0
+}
+
 const youtube = new YouTube(GOOGLE_API_KEY);
 const queue = new Map();
-
-
 
 bot.on("warn", console.warn);
 bot.on("error", console.error);
@@ -78,6 +129,12 @@ bot.on("message", async (msg) => {
     if (msg.author.bot) return;
     if (!msg.content.startsWith(PREFIX)) return;
 
+    if(stats.numRequests)
+        stats.averagePing = ((stats.averagePing + (bot.ws.ping / stats.numRequests)) * stats.numRequests) / (stats.numRequests + 1);
+    else
+        stats.averagePing = bot.ws.ping;
+    stats.numRequests += 1;
+    
     const args = msg.content.split(" ");
     const searchString = args.slice(1).join(" ");
     const url = args[1] ? args[1].replace(/<(.+)>/g, "$1") : "";

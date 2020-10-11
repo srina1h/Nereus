@@ -1,19 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <title>Nereus Stats</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <link href="/css/style.css" rel="stylesheet" type="text/css">
-</head>
-<body>
-  
-<div class="container">
-  <h1>Nereus Stats Backend Testing</h1>
-  <p>Ensure this renders when hosten from AWS.</p> 
-</div>
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-</body>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Secular+One&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <title>Nereus Dashboard</title>
+
+  </head>
+  <body>    
+
+    <!-- Side navigation -->
+    <div class="sidenav">
+      <div style="text-align: center;">
+        <img src="/img/logo.png" width=120>
+        <h3 style="font-family: 'Secular One', sans-serif; padding-top: 10px; padding-bottom: 20px; color: white">Nereus</h3>
+      </div>
+      <div class='sidebar-text'>
+        <a href="#"><i class="fa fa-pie-chart" aria-hidden="true"></i>
+          Stats
+        </a>
+        <a href="#"><i class="fa fa-server" aria-hidden="true"></i>
+          Servers
+        </a>
+      </div>
+    </div>
+
+
+    <div class='main'>
+      <nav class="navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+          <span class="navbar-text">
+            Backend for monitoring the <a href="https://github.com/srinathsrinivasan1/Nereus.git">Nereus</a> bot.
+            <br />Built with Bootstrap and Express.
+          </span>
+        </div>
+      </nav>    
+  
+
+      <div class="container">
+        <div class="row">
+          <div class="col col-md-3">      
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+              <div class="card-header">Bot Uptime</div>
+              <div class="card-body">
+                <h5 class="card-title"><%=uptime%></h5>
+                <p class="card-text">Time elapsed since the last restart of the bot in AWS.</p>
+              </div>
+            </div>
+          </div>          
+          <div class="col col-md-3">      
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+              <div class="card-header">Average Ping</div>
+              <div class="card-body">
+                <h5 class="card-title"><%=stats.averagePing%> milliseconds.</h5>
+                <p class="card-text">Metric taken each time a message is sent and averaged.</p>
+              </div>
+            </div>
+          </div>  
+
+          <div class="col col-md-3">      
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+              <div class="card-header">Total Requests</div>
+              <div class="card-body">
+                <h5 class="card-title"><%=stats.numRequests%> messages.</h5>
+                <p class="card-text">Total messages recognized by Nereus with the given prefix.</p>
+              </div>
+            </div>
+          </div> 
+          
+          <div class="col col-md-3">      
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+              <div class="card-header">Bot Stats</div>
+              <div class="card-body">
+                <h5 class="card-title"><%=numServers%> servers.</h5>
+                <p class="card-text">Total user count is <%=numUsers%>.</p>
+              </div>
+            </div>
+          </div>         
+        </div> 
+        <div class="row" style="margin-top: 20px">          
+          <div class="col">
+            <div class="card" style="width: 550px;">
+              <div class="card-body">
+                <h2 class="card-title" style="text-align: center; padding-bottom: 10px;">
+                  Server Distribution:
+                </h5>
+                <p class="card-text">
+                    <div class="chart-container"><canvas id="myChart"></canvas></div>          
+                    <p style="text-align: center; padding-top: 20px;"> <%= biggestGuildNames[0] %> is the largest server with <%= biggestGuildSizes[0] %> users.</p>                    
+                </p>           
+              </div>   
+            </div>
+          </div>           
+        </div>  
+      </div>
+      
+      <script>
+        var ctx = document.getElementById("myChart").getContext('2d');
+        var bgc = [
+          "#2ecc71",
+          "#3498db",
+          "#95a5a6",
+          "#9b59b6",
+          "#e74c3c",
+          "#34495e"                          
+        ];
+        var myChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: <%- JSON.stringify(biggestGuildNames); %>,
+            datasets: [{
+              backgroundColor: bgc.slice(0, <%= biggestGuildNames.length %>),
+              data: <%- JSON.stringify(biggestGuildSizes);  %>
+            }]
+          }        
+        });      
+      </script>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+  </body>
 </html>

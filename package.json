@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bootstrap": "^4.5.2",
+    "chart.js": "^2.9.3",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
