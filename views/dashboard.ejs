@@ -25,10 +25,10 @@
         <h3 style="font-family: 'Secular One', sans-serif; padding-top: 10px; padding-bottom: 20px; color: white">Nereus</h3>
       </div>
       <div class='sidebar-text'>
-        <a href="#"><i class="fa fa-pie-chart" aria-hidden="true"></i>
+        <a href="/"><i class="fa fa-pie-chart" aria-hidden="true"></i>
           Stats
         </a>
-        <a href="#"><i class="fa fa-server" aria-hidden="true"></i>
+        <a href="servers"><i class="fa fa-server" aria-hidden="true"></i>
           Servers
         </a>
       </div>
@@ -63,10 +63,10 @@
           </div>          
           <div class="col col-md-3">      
             <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
-              <div class="card-header">Average Ping</div>
+              <div class="card-header">API Latency</div>
               <div class="card-body">
                 <h5 class="card-title"><%=stats.averagePing%> milliseconds.</h5>
-                <p class="card-text">Metric taken each time a message is sent and averaged.</p>
+                <p class="card-text">Metric taken each time a message is received and averaged.</p>
               </div>
             </div>
           </div>  
@@ -93,23 +93,37 @@
         </div> 
         <div class="row" style="margin-top: 20px">          
           <div class="col">
-            <div class="card" style="width: 550px;">
+            <div class="card" style="width: 537px;">
               <div class="card-body">
                 <h2 class="card-title" style="text-align: center; padding-bottom: 10px;">
                   Server Distribution:
                 </h5>
                 <p class="card-text">
-                    <div class="chart-container"><canvas id="myChart"></canvas></div>          
+                    <div class="chart-container"><canvas id="pieChart"></canvas></div>          
                     <p style="text-align: center; padding-top: 20px;"> <%= biggestGuildNames[0] %> is the largest server with <%= biggestGuildSizes[0] %> users.</p>                    
                 </p>           
               </div>   
             </div>
+          </div>
+          <div class="col">
+            <div class="card" style="width: 540px; height: 417px;">
+              <div class="card-body">
+                <h2 class="card-title" style="text-align: center; padding-bottom: 10px;">
+                  Response Time (in ms):
+                </h5>
+                <p class="card-text">
+                    <div class="chart-container" style="padding-bottom: 10px;"><canvas id="lineChart"></canvas></div>          
+                    <p style="text-align: center; padding-top: 20px;"> Showing the last 30 valid messages.</p>                    
+                </p> 
+              </div>   
+            </div>           
           </div>           
         </div>  
       </div>
       
       <script>
-        var ctx = document.getElementById("myChart").getContext('2d');
+        var ctx = document.getElementById("pieChart").getContext('2d');
+        var ltx = document.getElementById("lineChart").getContext('2d');
         var bgc = [
           "#2ecc71",
           "#3498db",
@@ -118,7 +132,7 @@
           "#e74c3c",
           "#34495e"                          
         ];
-        var myChart = new Chart(ctx, {
+        var pieChart = new Chart(ctx, {
           type: 'pie',
           data: {
             labels: <%- JSON.stringify(biggestGuildNames); %>,
@@ -127,7 +141,18 @@
               data: <%- JSON.stringify(biggestGuildSizes);  %>
             }]
           }        
-        });      
+        });   
+        var lineChart = new Chart(ltx, {
+          type: 'line',
+          data: {
+            labels: [...Array(<%= stats.pingArr.length %>).keys()],
+            datasets: [{
+              label: "Message Response Time",
+              data: <%= JSON.stringify(stats.pingArr.slice(stats.arrCounter, stats.pingArr.length).concat(stats.pingArr.slice(0, stats.arrCounter))); %>,
+              backgroundColor: "#EA3C53",       
+            }]
+          }
+        });              
       </script>
     </div>
     <!-- Optional JavaScript -->

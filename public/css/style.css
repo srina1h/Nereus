@@ -25,19 +25,19 @@ display: block;
 
 /* When you mouse over the navigation links, change their color */
 .sidenav a:hover {
-color: #f1f1f1;
+    color: #f1f1f1;
 }
 
 /* Style page content */
 .main {
-margin-left: 150px; /* Same as the width of the sidebar */
-padding: 0px 10px;
+    margin-left: 150px; /* Same as the width of the sidebar */
+    padding: 0px 10px;
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
 @media screen and (max-height: 450px) {
-.sidenav {padding-top: 15px;}
-.sidenav a {font-size: 18px;}
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
 }
 
 .sidebar-text {
