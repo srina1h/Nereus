@@ -53,7 +53,7 @@
       <div class="container">
         <div class="row">
           <div class="col col-md-3">      
-            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; min-height: 14rem;">
               <div class="card-header">Bot Uptime</div>
               <div class="card-body">
                 <h5 class="card-title"><%=uptime%></h5>
@@ -62,7 +62,7 @@
             </div>
           </div>          
           <div class="col col-md-3">      
-            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; min-height: 14rem;">
               <div class="card-header">API Latency</div>
               <div class="card-body">
                 <h5 class="card-title"><%=stats.averagePing%> milliseconds.</h5>
@@ -72,7 +72,7 @@
           </div>  
 
           <div class="col col-md-3">      
-            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; min-height: 14rem;">
               <div class="card-header">Total Requests</div>
               <div class="card-body">
                 <h5 class="card-title"><%=stats.numRequests%> messages.</h5>
@@ -82,7 +82,7 @@
           </div> 
           
           <div class="col col-md-3">      
-            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; height: 14rem;">
+            <div class="card text-white bg-dark mb-3" style="max-width: 18rem; margin-top: 20px; min-height: 14rem;">
               <div class="card-header">Bot Stats</div>
               <div class="card-body">
                 <h5 class="card-title"><%=numServers%> servers.</h5>
@@ -118,7 +118,15 @@
               </div>   
             </div>           
           </div>           
-        </div>  
+        </div>            
+      </div>          
+
+      <div class="row">
+        <div class="col">
+            <p style="text-align: center; padding-top: 20px;"> There are some discrepancies in the total user count and the value shown in server distribution.</p>                    
+        </div>           
+      </div>       
+
       </div>
       
       <script>

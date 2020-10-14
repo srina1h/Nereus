@@ -15,6 +15,7 @@
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
     "node-opus": "^0.3.3",
+    "opusscript": "0.0.7",
     "server": "^1.0.29",
     "server.js": "^1.0.0",
     "simple-youtube-api": "^5.2.1",

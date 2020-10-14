@@ -35,7 +35,7 @@ const getTopSizes = (bot, all) => {
         ind++;
     })
     res.sort(function(a, b) {
-        return b - a;
+        return b[0] - a[0];
     });
     if(all) return res;
     res = res.slice(0, 5);
@@ -53,6 +53,14 @@ app.set('view engine', 'html');
 
 app.get("/", function (request, response) {
     var res = getTopSizes(bot, false);
+    /*console.log(stats,
+        getUptime(),
+        bot.guilds.cache.size,
+         bot.users.cache.size,
+        bot.guilds.cache,
+        res[1],
+         res[0]      
+    );*/
     response.render('dashboard.ejs', {
         stats: stats,
         uptime: getUptime(),
@@ -309,6 +317,9 @@ bot.on("message", async (msg) => {
                 try {
                     var videos = await youtube.searchVideos(searchString, 10);
                     let index = 0;
+                    if(!videos.length) {
+                        return msg.channel.send("🆘  **|**  No matches found");
+                    }
                     res = msg.channel.send(`
 __**Song selection**__
 ${videos.map(video2 => `**\`${++index}\`  |**  ${video2.title}`).join("\n")}
@@ -322,9 +333,7 @@ Please provide a value to select one of the search results ranging from 1-10.
                         });
                     } catch (err) {
                         console.error(err);
-                        res = await msg.channel.send("Invalid Value 🤭 ");                
-                        updateStats(stats, res.createdAt - msg.createdAt);
-                        return res;                    
+                        return msg.channel.send("Invalid Value 🤭 ");
                     }
                     const videoIndex = parseInt(response.first().content);
                     var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
@@ -346,6 +355,7 @@ Please provide a value to select one of the search results ranging from 1-10.
             res = await await msg.channel.send("⏭️  **|**  Skipped");
         }
     } else if (command === "stop"){
+        if(!serverQueue) return;
         if (serverQueue.playing === false) res = await msg.channel.send("Music is currently paused ⏸ | Please un-pause (/play) and then stop 😇");
         else if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
         else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
@@ -436,6 +446,7 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
 
 async function handleVideo(video, msg, voiceChannel, playlist = false) {
     const serverQueue = queue.get(msg.guild.id);
+    var res;
     const song = {
         id: video.id,
         title: Util.escapeMarkdown(video.title),
@@ -459,16 +470,24 @@ async function handleVideo(video, msg, voiceChannel, playlist = false) {
             var connection = await voiceChannel.join();
             connection.voice.setSelfDeaf(true);
             queueConstruct.connection = connection;
+            if(msg.createdAt)
+                updateStats(Date.now() - msg.createdAt);
             play(msg.guild, queueConstruct.songs[0]);
         } catch (error) {
             console.error(`Could not join voice channel: ${error}`);
             queue.delete(msg.guild.id);
             res = await msg.channel.send(`Could not join voice channel: **\`${error}\`**`);
+            if(res && msg.createdAt) {
+                updateStats(res.createdAt - msg.createdAt);        
+            }
         }
     } else {
         serverQueue.songs.push(song);
         if (playlist) return;
         else res = await msg.channel.send(`🎉 **|** **\`${song.title}\`** has been added to queue..`);
+        if(res && msg.createdAt) {
+            updateStats(res.createdAt - msg.createdAt);        
+        }        
     }
     return;
 }
