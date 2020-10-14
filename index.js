@@ -4,10 +4,46 @@ const ytdl = require("ytdl-core");
 const dotenv = require("dotenv").config();
 const path = require("path");
 const fs = require('fs')
+const bcrypt = require('bcrypt');
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy;
 
+var bodyParser = require('body-parser');
 var express = require("express");
 var http = require("http");
 var app = express();
+
+app.use(require('cookie-parser')());
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(require('express-session')({
+    secret: 'keyboard cat',
+    resave: true,
+    saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+  
+passport.deserializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        bcrypt.compare(password, process.env.PASS, function(err, res) {
+            if(res && username === "admin") {
+                return done(null, username);
+            } else {
+                return done(null, false, { message: 'Incorrect password.' })
+            }
+        });
+    }
+));
+
 
 const storeData = (data, path) => {
   try {
@@ -28,15 +64,17 @@ const loadData = (path) => {
 
 const getTopSizes = (bot, all) => {
     var other = 0, ind = 0;
-    var resSizes = [], res = [], resNames = [];
+    var resSizes = [], res = [], resNames = [];    
     bot.guilds.cache.forEach((g) => {
         res.push([g.memberCount, g.name])
-        if(ind >= 5) other += g.memberCount;
-        ind++;
     })
     res.sort(function(a, b) {
         return b[0] - a[0];
-    });
+    });    
+    res.forEach((g) => {
+        if(ind < 5) other += g.memberCount;
+        ind++;
+    })
     if(all) return res;
     res = res.slice(0, 5);
     res.forEach((value) => {
@@ -47,20 +85,29 @@ const getTopSizes = (bot, all) => {
     return [resSizes, resNames];
 }
 
+function authCheck(req, res, next) {
+    if(req.user) next();
+    else res.redirect("/login");
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
-app.get("/", function (request, response) {
+app.post('/login', passport.authenticate('local', {  
+        successRedirect: '/',
+        failureRedirect: '/login',
+        failureFlash: false 
+    })
+);
+
+app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/login');
+});
+
+app.get("/", authCheck, function (request, response, next) {
     var res = getTopSizes(bot, false);
-    /*console.log(stats,
-        getUptime(),
-        bot.guilds.cache.size,
-         bot.users.cache.size,
-        bot.guilds.cache,
-        res[1],
-         res[0]      
-    );*/
     response.render('dashboard.ejs', {
         stats: stats,
         uptime: getUptime(),
@@ -70,10 +117,13 @@ app.get("/", function (request, response) {
         biggestGuildNames: res[1],
         biggestGuildSizes: res[0]      
     });
-    //response.sendStatus(200);
 });
 
-app.get("/servers", function (request, response) {
+app.get("/login", function (request, response) {
+    response.render('login.ejs')
+});
+
+app.get("/servers", authCheck, function (request, response, next) {
     response.render('servers.ejs', {
         guildList: getTopSizes(bot, true) 
     });

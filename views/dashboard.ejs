@@ -31,6 +31,9 @@
         <a href="servers"><i class="fa fa-server" aria-hidden="true"></i>
           Servers
         </a>
+        <a href="logout"><i class="fa fa-lock" style="padding-left: 5px; padding-right: 5px;" aria-hidden="true"></i>
+          Logout
+        </a>        
       </div>
     </div>
 
@@ -86,7 +89,7 @@
               <div class="card-header">Bot Stats</div>
               <div class="card-body">
                 <h5 class="card-title"><%=numServers%> servers.</h5>
-                <p class="card-text">Total user count is <%=numUsers%>.</p>
+                <p class="card-text">Total user count is <%=numUsers%>. Bots are not taken into account here.</p>
               </div>
             </div>
           </div>         
@@ -123,7 +126,7 @@
 
       <div class="row">
         <div class="col">
-            <p style="text-align: center; padding-top: 20px;"> There are some discrepancies in the total user count and the value shown in server distribution.</p>                    
+            <p style="text-align: center; padding-top: 20px;"> There are some discrepancies in the total user count and the value shown in server distribution due to other bots.</p>                    
         </div>           
       </div>       
 
