@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Secular+One&display=swap" rel="stylesheet">
+    <link href="/css/login.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+</head>
+<body>  
+    <form action="/login" method="post">
+        <div class="imgcontainer">
+          <img src="/img/logo.png" width=120 alt="Avatar" class="avatar">
+        </div>
+      
+        <div>
+            <div class="row">
+                <div class="col">
+                    <div class="card" style="width: 400px; margin: 0 auto; float: none; margin-bottom: 10px;">
+                        <div class="card-text" style="padding-left: 15px; padding-right: 15px;">
+                            <label for="username" style="padding-top: 15px;"><b>Username</b></label>
+                            <input type="text" placeholder="Enter Username" name="username" required>
+                            <label for="password" style="padding-top: 15px;"><b>Password</b></label>
+                            <input type="password" placeholder="Enter Password" name="password" required>
+                            <div style="width: 100px; margin: 0 auto;">
+                                <button type="submit">Login</button>                            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>    
+
+</body>
+</html>
+
+

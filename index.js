@@ -1,21 +1,139 @@
-const { Client, Util, MessageEmbed } = require("discord.js");
+const { Client, Util, MessageEmbed, Message } = require("discord.js");
 const YouTube = require("simple-youtube-api");
 const ytdl = require("ytdl-core");
 const dotenv = require("dotenv").config();
+const path = require("path");
+const fs = require('fs')
+const bcrypt = require('bcrypt');
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy;
 
+var bodyParser = require('body-parser');
 var express = require("express");
 var http = require("http");
 var app = express();
 
+app.use(require('cookie-parser')());
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(require('express-session')({
+    secret: 'keyboard cat',
+    resave: true,
+    saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.use(express.static("public"));
-app.get("/", function (request, response) {
-    response.sendStatus(200);
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+  
+passport.deserializeUser(function(user, done) {
+    done(null, user);
 });
 
-var listener = app.listen(process.env.PORT, function () {
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        bcrypt.compare(password, process.env.PASS, function(err, res) {
+            if(res && username === "admin") {
+                return done(null, username);
+            } else {
+                return done(null, false, { message: 'Incorrect password.' })
+            }
+        });
+    }
+));
+
+
+const storeData = (data, path) => {
+  try {
+    fs.writeFileSync(path, JSON.stringify(data))
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const loadData = (path) => {
+  try {
+    return JSON.parse(fs.readFileSync(path, 'utf8'));
+  } catch (err) {
+    console.error(err)
+    return false
+  }
+}
+
+const getTopSizes = (bot, all) => {
+    var other = 0, ind = 0;
+    var resSizes = [], res = [], resNames = [];    
+    bot.guilds.cache.forEach((g) => {
+        res.push([g.memberCount, g.name])
+    })
+    res.sort(function(a, b) {
+        return b[0] - a[0];
+    });    
+    res.forEach((g) => {
+        if(ind < 5) other += g.memberCount;
+        ind++;
+    })
+    if(all) return res;
+    res = res.slice(0, 5);
+    res.forEach((value) => {
+        resSizes.push(value[0]);
+        resNames.push(value[1]);
+    })
+    resSizes.push(other); resNames.push("Other");
+    return [resSizes, resNames];
+}
+
+function authCheck(req, res, next) {
+    if(req.user) next();
+    else res.redirect("/login");
+}
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+
+app.post('/login', passport.authenticate('local', {  
+        successRedirect: '/',
+        failureRedirect: '/login',
+        failureFlash: false 
+    })
+);
+
+app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/login');
+});
+
+app.get("/", authCheck, function (request, response, next) {
+    var res = getTopSizes(bot, false);
+    response.render('dashboard.ejs', {
+        stats: stats,
+        uptime: getUptime(),
+        numServers: bot.guilds.cache.size,
+        numUsers: bot.users.cache.size,
+        guildList: bot.guilds.cache,
+        biggestGuildNames: res[1],
+        biggestGuildSizes: res[0]      
+    });
+});
+
+app.get("/login", function (request, response) {
+    response.render('login.ejs')
+});
+
+app.get("/servers", authCheck, function (request, response, next) {
+    response.render('servers.ejs', {
+        guildList: getTopSizes(bot, true) 
+    });
+});
+
+
+var listener = app.listen(9000, function () {
     console.log("Your app is listening on port " + listener.address().port);
 });
+
 setInterval(() => {
     http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
 }, 270000);
@@ -28,10 +146,25 @@ const bot = new Client({
     disableMentions: "all"
 });
 
+const getUptime = () => {
+    let totalSeconds = (bot.uptime / 1000);
+    let days = Math.floor(totalSeconds / 86400);
+    totalSeconds %= 86400;
+    let hours = Math.floor(totalSeconds / 3600);
+    totalSeconds %= 3600;
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = Math.floor(totalSeconds % 60);    
+    return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+}
+
+var stats = loadData("./public/stats.json");
+const updateStats = (val) => {
+    if(stats.pingArr.length < 30) stats.pingArr.push(val);
+    else stats.pingArr[stats.arrCounter] = val;
+    stats.arrCounter = (stats.arrCounter + 1) % 30;
+}
 const youtube = new YouTube(GOOGLE_API_KEY);
 const queue = new Map();
-
-
 
 bot.on("warn", console.warn);
 bot.on("error", console.error);
@@ -73,6 +206,18 @@ bot.on("guildCreate", (guild) => {
 bot.on("message", async (msg) => { 
     if (msg.author.bot) return;
     if (!msg.content.startsWith(PREFIX)) return;
+    var res;
+    
+    // Handling stats
+    if(stats.numRequests)
+        stats.averagePing = ((stats.averagePing + (bot.ws.ping / stats.numRequests)) * stats.numRequests) / (stats.numRequests + 1);
+    else
+        stats.averagePing = bot.ws.ping;
+    stats.averagePing = Math.floor(stats.averagePing);
+    stats.numRequests += 1;
+    if(stats.numRequests % 10 == 0) {
+        storeData(stats, "./public/stats.json");
+    }
 
     const args = msg.content.split(" ");
     const searchString = args.slice(1).join(" ");
@@ -111,67 +256,72 @@ bot.on("message", async (msg) => {
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
         .addField(PREFIX+'bruh', 'Try it to find out!', true)
         .addField(PREFIX+'count', 'Check out our user base!', true);
-        msg.channel.send(helpembed);
+        res = await msg.channel.send(helpembed);
     }
 
-    if(command === "count"){
-        return msg.channel.send("Serving the 🍹 to " + bot.users.cache.size + " users on "+ bot.guilds.cache.size + " servers.");
+    else if(command === "count"){
+        res = await msg.channel.send("Serving the 🍹 to " + bot.users.cache.size + " users on "+ bot.guilds.cache.size + " servers.");
     }
 
-    if (command === "lofi"){
+    else if (command === "lofi"){
         const voiceChannel = msg.member.voice.channel;
         if(!voiceChannel){
-            return msg.channel.send("You need to be in an active voice channel to play Lo-Fi Music!");
+            res = await msg.channel.send("You need to be in an active voice channel to play Lo-Fi Music!");
+            updateStats(res.createdAt - msg.createdAt);
+            return res;        
         }
         const permissions = voiceChannel.permissionsFor(msg.client.user);
         if (!permissions.has("CONNECT")) {
-            return msg.channel.send("Connect permission required !!");
+            res = await msg.channel.send("Connect permission required !!");
         }
-        if (!permissions.has("SPEAK")) {
-            return msg.channel.send("Speak permission required !!");
+        else if (!permissions.has("SPEAK")) {
+            res = await msg.channel.send("Speak permission required !!");
         }
         else{
             try{
                 var videos = await youtube.searchVideos("lofi", 10);
                 var video = await youtube.getVideoByID(videos[0].id);
-                if(!video) return msg.channel.send("🆘 | Sorry, cannot play Lo-Fi Music now!");
+                if(!video) res = await msg.channel.send("🆘 | Sorry, cannot play Lo-Fi Music now!");
             } catch (err) {
                 console.error(err);
-                return msg.channel.send("🆘 | Sorry, cannot play Lo-Fi Music now!");
+                res = await msg.channel.send("🆘 | Sorry, cannot play Lo-Fi Music now!");
             }
             return handleVideo(video, msg, voiceChannel);
         }
 
     }
-
-    if (command === "play" || command === "p") {
+    else if (command === "play" || command === "p") {
         const voiceChannel = msg.member.voice.channel;
-        if (!voiceChannel) return msg.channel.send("You need to be in an active voice channel to play music 😴");
+        if (!voiceChannel) {
+            res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+            updateStats(res.createdAt - msg.createdAt);
+            return res;
+        }
         const permissions = voiceChannel.permissionsFor(msg.client.user);
         if (!permissions.has("CONNECT")) {
-            return msg.channel.send("Connect permission required !!");
+            res = await msg.channel.send("Connect permission required !!");      
         }
-        if (!permissions.has("SPEAK")) {
-            return msg.channel.send("Speak permission required !!");
+        else if (!permissions.has("SPEAK")) {
+            res = await msg.channel.send("Speak permission required !!");
         }
-        if ((url === "" && searchString === "") && serverQueue.playing === true){
-            return msg.channel.send("Please specify either the URL or the song name 🎶");
+        else if ((url === "" && searchString === "") && serverQueue.playing === true){
+            res = await msg.channel.send("Please specify either the URL or the song name 🎶");     
         }
-        if ((url === "" && searchString === "") && serverQueue.playing === false){
+        else if ((url === "" && searchString === "") && serverQueue.playing === false){
             if (serverQueue && !serverQueue.playing){
                 serverQueue.playing = true;
                 serverQueue.connection.dispatcher.resume();
-                return msg.channel.send("▶  **|**  Resume.");
+                res = await msg.channel.send("▶  **|**  Resume.");           
             }
         }
-        if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
+        else if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
             const playlist = await youtube.getPlaylist(url);
             const videos = await playlist.getVideos();
             for (const video of Object.values(videos)) {
                 const video2 = await youtube.getVideoByID(video.id); 
                 await handleVideo(video2, msg, voiceChannel, true); 
             }
-            return msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);
+            res = await msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);    
         } else {
             try {
                 var video = await youtube.getVideo(url);
@@ -179,33 +329,37 @@ bot.on("message", async (msg) => {
                 try {
                     var videos = await youtube.searchVideos(searchString, 10);
                     var video = await youtube.getVideoByID(videos[0].id);
-                    if (!video) return msg.channel.send("🆘  **|**  No matches found !");
+                    if (!video) res = await msg.channel.send("🆘  **|**  No matches found !");
                 } catch (err) {
                     console.error(err);
-                    return msg.channel.send("🆘  **|**  No matches found !");
+                    res = await msg.channel.send("🆘  **|**  No matches found !");          
                 }
             }
             return handleVideo(video, msg, voiceChannel);
         }
     }
-    if (command === "search" || command === "sc") {
+    else if (command === "search" || command === "sc") {
         const voiceChannel = msg.member.voice.channel;
-        if (!voiceChannel) return msg.channel.send("You need to be in an active voice channel to play music 😴");
+        if (!voiceChannel) {
+            res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+            updateStats(stats, res.createdAt - msg.createdAt);
+            return res;
+        }
         const permissions = voiceChannel.permissionsFor(msg.client.user);
         if (!permissions.has("CONNECT")) {
-            return msg.channel.send("Connect permission required !!");
+            res = await msg.channel.send("Connect permission required !!");       
         }
-        if (!permissions.has("SPEAK")) {
-            return msg.channel.send("Speak permission required !!");
+        else if (!permissions.has("SPEAK")) {
+            res = await msg.channel.send("Speak permission required !!");      
         }
-        if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
+        else if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
             const playlist = await youtube.getPlaylist(url);
             const videos = await playlist.getVideos();
             for (const video of Object.values(videos)) {
                 const video2 = await youtube.getVideoByID(video.id); 
                 await handleVideo(video2, msg, voiceChannel, true); 
             }
-            return msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);
+            res = await msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);        
         } else {
             try {
                 var video = await youtube.getVideo(url);
@@ -213,7 +367,10 @@ bot.on("message", async (msg) => {
                 try {
                     var videos = await youtube.searchVideos(searchString, 10);
                     let index = 0;
-                    msg.channel.send(`
+                    if(!videos.length) {
+                        return msg.channel.send("🆘  **|**  No matches found");
+                    }
+                    res = msg.channel.send(`
 __**Song selection**__
 ${videos.map(video2 => `**\`${++index}\`  |**  ${video2.title}`).join("\n")}
 Please provide a value to select one of the search results ranging from 1-10.
@@ -226,82 +383,85 @@ Please provide a value to select one of the search results ranging from 1-10.
                         });
                     } catch (err) {
                         console.error(err);
-                        return msg.channel.send("invalid Value 🤭 ");
+                        return msg.channel.send("Invalid Value 🤭 ");
                     }
                     const videoIndex = parseInt(response.first().content);
                     var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
                 } catch (err) {
                     console.error(err);
-                    return msg.channel.send("🆘  **|**  No matches found");
+                    res = await msg.channel.send("🆘  **|**  No matches found");
+                    updateStats(stats, res.createdAt - msg.createdAt);
+                    return res;
                 }
             }
             return handleVideo(video, msg, voiceChannel);
         }
 
-    } else if (command === "skip") {
-        if (!msg.member.voice.channel) return msg.channel.send("You need to be in an active voice channel to play music 😴");
-        if (!serverQueue) return msg.channel.send("There is nothing playing 🤭 ");
-        serverQueue.connection.dispatcher.end("Skipped");
-        return msg.channel.send("⏭️  **|**  Skipped");
-
+    } if (command === "skip") {
+        if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+        else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else {
+            serverQueue.connection.dispatcher.end("Skipped");
+            res = await await msg.channel.send("⏭️  **|**  Skipped");
+        }
     } else if (command === "stop"){
-        if (serverQueue.playing === false) return msg.channel.send("Music is currently paused ⏸ | Please un-pause (/play) and then stop 😇");
-        if (!msg.member.voice.channel) return msg.channel.send("You need to be in an active voice channel to play music 😴");
-        if (!serverQueue) return msg.channel.send("There is nothing playing 🤭 ");
-        serverQueue.songs = [];
-        serverQueue.connection.dispatcher.end("Stopped");
-        return msg.channel.send("⏹️  **|**  Stopped");
-
+        if(!serverQueue) return;
+        if (serverQueue.playing === false) res = await msg.channel.send("Music is currently paused ⏸ | Please un-pause (/play) and then stop 😇");
+        else if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+        else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else {
+            serverQueue.songs = [];
+            serverQueue.connection.dispatcher.end("Stopped");
+            res = await msg.channel.send("⏹️  **|**  Stopped"); 
+        }
     } else if (command === "volume" || command === "vol") {
-        if (!msg.member.voice.channel) return msg.channel.send("You need to be in an active voice channel to play music 😴");
-        if (!serverQueue) return msg.channel.send("There is nothing playing 🤭 ");
-        if (!args[1]) return msg.channel.send(`The current volume is: **\`${serverQueue.volume}%\`**`);
-        if (isNaN(args[1]) || args[1] > 100) return msg.channel.send("Volume in range **1** - **100**.");
-        serverQueue.volume = args[1];
-        serverQueue.connection.dispatcher.setVolume(args[1] / 100);
-        return msg.channel.send(`Volume set to : **\`${args[1]}%\`**`);
-
+        if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+        else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else if (!args[1]) res = await msg.channel.send(`The current volume is: **\`${serverQueue.volume}%\`**`);
+        else if (isNaN(args[1]) || args[1] > 100) res = await msg.channel.send("Volume in range **1** - **100**.");
+        else {
+            serverQueue.volume = args[1];
+            serverQueue.connection.dispatcher.setVolume(args[1] / 100);
+            res = await msg.channel.send(`Volume set to : **\`${args[1]}%\`**`);      
+        }
     } else if (command === "nowplaying" || command === "np") {
-        if (!serverQueue) return msg.channel.send("There is nothing playing 🤭 ");
-        return msg.channel.send(`🎶  **|**  Now Playing: **\`${serverQueue.songs[0].title}\`**`);
-
+        if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else res = await msg.channel.send(`🎶  **|**  Now Playing: **\`${serverQueue.songs[0].title}\`**`);    
     } else if (command === "queue" || command === "q") {
-        if (!serverQueue) return msg.channel.send("There is nothing playing 🤭 ");
-        return msg.channel.send(`
+        if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else res = await msg.channel.send(`
 __**Song Queue**__
 ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
 **Now Playing: \`${serverQueue.songs[0].title}\`**
         `);
-
     } else if (command === "pause") {
         if (serverQueue && serverQueue.playing) {
             serverQueue.playing = false;
             serverQueue.connection.dispatcher.pause();
-            return msg.channel.send("⏸  **|**  Paused.");
+            res = await msg.channel.send("⏸  **|**  Paused.");                   
         }
-        return msg.channel.send("There is nothing playing 🤭");
-
+        else res = await msg.channel.send("There is nothing playing 🤭");
     } else if (command === "resume") {
         if (serverQueue && !serverQueue.playing) {
             serverQueue.playing = true;
             serverQueue.connection.dispatcher.resume();
-            return msg.channel.send("▶  **|**  Resume.");
+            res = await msg.channel.send("▶  **|**  Resume.");          
         }
-        return msg.channel.send("There is nothing playing 🤭");
+        else res = await msg.channel.send("There is nothing playing 🤭");      
     } else if (command === "loop") {
         if (serverQueue) {
             serverQueue.loop = !serverQueue.loop;
-            return msg.channel.send(`🔁 **|** Loop ${serverQueue.loop === true ? "enabled" : "disabled"}!`);
-        };
-        return msg.channel.send("There is nothing playing 🤭");
+            res = await msg.channel.send(`🔁 **|** Loop ${serverQueue.loop === true ? "enabled" : "disabled"}!`);       
+        }
+        else res = await msg.channel.send("There is nothing playing 🤭");   
     } else if (command === "bruh"){
-        return msg.channel.send("moment");
+        res = await msg.channel.send("moment");       
     } else if (command === "invite"){
         const invembed = new MessageEmbed()
         .setColor('0x00AE86')
         .setTitle('Invite Nereus to your server!')
         .setURL('https://discord.com/api/oauth2/authorize?client_id=734801580548685884&permissions=8&scope=bot');
-        return msg.author.send(invembed);
+        res = await msg.author.send(invembed);      
     } else if (command === "helpme") {
         const helpmeembed = new MessageEmbed()
         .setTitle('Check out the Nereus git repository!')
@@ -326,12 +486,17 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
         .addField(PREFIX+'bruh', 'Try it to find out!', true)
         .addField(PREFIX+'count', 'Check out our user base!', true);
-        msg.author.send(helpmeembed);
+        res = await msg.author.send(helpmeembed);
+    }
+    if(res && msg.createdAt) {
+        updateStats(res.createdAt - msg.createdAt);
+        return res;   
     }
 });
 
 async function handleVideo(video, msg, voiceChannel, playlist = false) {
     const serverQueue = queue.get(msg.guild.id);
+    var res;
     const song = {
         id: video.id,
         title: Util.escapeMarkdown(video.title),
@@ -355,16 +520,24 @@ async function handleVideo(video, msg, voiceChannel, playlist = false) {
             var connection = await voiceChannel.join();
             connection.voice.setSelfDeaf(true);
             queueConstruct.connection = connection;
+            if(msg.createdAt)
+                updateStats(Date.now() - msg.createdAt);
             play(msg.guild, queueConstruct.songs[0]);
         } catch (error) {
             console.error(`Could not join voice channel: ${error}`);
             queue.delete(msg.guild.id);
-            return msg.channel.send(`Could not join voice channel: **\`${error}\`**`);
+            res = await msg.channel.send(`Could not join voice channel: **\`${error}\`**`);
+            if(res && msg.createdAt) {
+                updateStats(res.createdAt - msg.createdAt);        
+            }
         }
     } else {
         serverQueue.songs.push(song);
         if (playlist) return;
-        else return msg.channel.send(`🎉 **|** **\`${song.title}\`** has been added to queue..`);
+        else res = await msg.channel.send(`🎉 **|** **\`${song.title}\`** has been added to queue..`);
+        if(res && msg.createdAt) {
+            updateStats(res.createdAt - msg.createdAt);        
+        }        
     }
     return;
 }
