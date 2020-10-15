@@ -141,6 +141,8 @@ setInterval(() => {
 const TOKEN = process.env.BOT_TOKEN;
 const PREFIX = process.env.PREFIX;
 const GOOGLE_API_KEY = process.env.YTAPI_KEY;
+const ADMIN_ID = process.env.ADMIN_ID;
+const ADMIN_ID_LIST = ADMIN_ID.split(';');
 
 const bot = new Client({
     disableMentions: "all"
@@ -221,6 +223,7 @@ bot.on("message", async (msg) => {
 
     const args = msg.content.split(" ");
     const searchString = args.slice(1).join(" ");
+    const announcement = args.slice(1).join(" ");
     const url = args[1] ? args[1].replace(/<(.+)>/g, "$1") : "";
     const serverQueue = queue.get(msg.guild.id);
     
@@ -487,6 +490,28 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
         .addField(PREFIX+'bruh', 'Try it to find out!', true)
         .addField(PREFIX+'count', 'Check out our user base!', true);
         res = await msg.author.send(helpmeembed);
+    } else if(command === "announce"){
+        const this_id = msg.author.id
+        for(let i = 0; i < ADMIN_ID_LIST.length; i++){
+            if(this_id === ADMIN_ID_LIST[i]){
+                msg.reply(`Allowed admin`);
+                
+                bot.guilds.cache.forEach((guild) =>{
+                    let announce_channel = "";
+                    guild.channels.cache.forEach((channel) =>{
+                        if (channel.type == "text" && announce_channel === ""){
+                            if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
+                                announce_channel = channel;
+                            }
+                        }
+                    });
+                    if (announce_channel != ""){
+                        announce_channel.send(announcement);
+                    }
+                });
+                break;
+            }
+        }
     }
     if(res && msg.createdAt) {
         updateStats(res.createdAt - msg.createdAt);
