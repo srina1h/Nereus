@@ -174,6 +174,7 @@ bot.on("ready", () => {console.log(`${bot.user.tag} has been successfully turned
 bot.on("shardDisconnect", (event, id) => console.log(`Shard ${id} disconnected (${event.code}) ${event}, trying to reconnect!`));
 bot.on("shardReconnecting", (id) => console.log(`Shard ${id} reconnecting...`));
 bot.on("guildCreate", (guild) => {
+    bot.user.setActivity(PREFIX +"help on "+ bot.guilds.cache.size +" servers", {type: 'LISTENING'});
     const generalChannel = guild.channels.cache.find(channel => channel.name === "general");
     if (generalChannel){
         const helpembed = new MessageEmbed()
@@ -196,8 +197,9 @@ bot.on("guildCreate", (guild) => {
         .addField(PREFIX+'resume', 'Resumes the currently paused song.', true)
         .addField(PREFIX+'stop', 'Pauses the curently playing song.', true)
         .addField(PREFIX+'queue', 'Displays the song queue.', true)
-        .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
+        .addField(PREFIX+'volume <value>', 'Changes the volume to a value between 1-100%.', true)
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
+        .addField(PREFIX+'support', 'Sends you a link to the official support server.', true)
         .addField(PREFIX+'bruh', 'Try it to find out!', true)
         .addField(PREFIX+'count', 'Check out our user base!', true);
         generalChannel.send('Hey there! Here is a quickstart guide on how to use Nereus!')
@@ -255,8 +257,9 @@ bot.on("message", async (msg) => {
         .addField(PREFIX+'resume', 'Resumes the currently paused song.', true)
         .addField(PREFIX+'stop', 'Pauses the curently playing song.', true)
         .addField(PREFIX+'queue', 'Displays the song queue.', true)
-        .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
+        .addField(PREFIX+'volume <value>', 'Changes the volume to a value between 1-100%.', true)
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
+        .addField(PREFIX+'support', 'Sends you a link to the official support server.', true)
         .addField(PREFIX+'bruh', 'Try it to find out!', true)
         .addField(PREFIX+'count', 'Check out our user base!', true);
         res = await msg.channel.send(helpembed);
@@ -485,9 +488,10 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
         .addField(PREFIX+'resume', 'Resumes the currently paused song.', true)
         .addField(PREFIX+'stop', 'Pauses the curently playing song.', true)
         .addField(PREFIX+'queue', 'Displays the song queue.', true)
-        .addField(PREFIX+'volume <value>', 'changes the volume to a value between 1-100%.', true)
+        .addField(PREFIX+'volume <value>', 'Changes the volume to a value between 1-100%.', true)
         .addField(PREFIX+'nowplaying', 'Shows the song that is currently playing.', true)
         .addField(PREFIX+'bruh', 'Try it to find out!', true)
+        .addField(PREFIX+'support', 'Sends you a link to the official support server.', true)
         .addField(PREFIX+'count', 'Check out our user base!', true);
         res = await msg.author.send(helpmeembed);
     } else if(command === "announce"){
@@ -512,6 +516,14 @@ ${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
                 break;
             }
         }
+    } else if(command === "support"){
+        const invembed = new MessageEmbed()
+        .setColor('0x00AE86')
+        .setTitle('Raise an issue in the Github Repository')
+        .setURL('https://github.com/srinathsrinivasan1/Nereus');
+        res = await msg.channel.send(invembed);  
+        msg.channel.send('Or join the Nereus support server for any queries 💬');
+        msg.channel.send('https://discord.gg/X5QXRHK');      
     }
     if(res && msg.createdAt) {
         updateStats(res.createdAt - msg.createdAt);
