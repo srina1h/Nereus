@@ -1,12 +1,15 @@
 const { Client, Util, MessageEmbed, Message } = require("discord.js");
 const YouTube = require("simple-youtube-api");
 const ytdl = require("ytdl-core");
+const DisTube = require("distube");
 const dotenv = require("dotenv").config();
 const path = require("path");
 const fs = require('fs')
 const bcrypt = require('bcrypt');
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy;
+
+
 
 var bodyParser = require('body-parser');
 var express = require("express");
@@ -147,6 +150,10 @@ const ADMIN_ID_LIST = ADMIN_ID.split(';');
 const bot = new Client({
     disableMentions: "all"
 });
+
+const distube = new DisTube(bot, { searchSongs: false, emitNewSongOnly: true });
+
+const distube1 = new DisTube(bot, )
 
 const getUptime = () => {
     let totalSeconds = (bot.uptime / 1000);
@@ -292,7 +299,7 @@ bot.on("message", async (msg) => {
                 console.error(err);
                 res = await msg.channel.send("🆘 | Sorry, cannot play Lo-Fi Music now!");
             }
-            return handleVideo(video, msg, voiceChannel);
+            return distube.play(msg, "lofi");
         }
 
     }
@@ -327,8 +334,8 @@ bot.on("message", async (msg) => {
                 const video2 = await youtube.getVideoByID(video.id); 
                 await handleVideo(video2, msg, voiceChannel, true); 
             }
-            res = await msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);    
-        } else {
+            res = await msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);}   
+        else {
             try {
                 var video = await youtube.getVideo(url);
             } catch (error) {
@@ -340,8 +347,10 @@ bot.on("message", async (msg) => {
                     console.error(err);
                     res = await msg.channel.send("🆘  **|**  No matches found !");          
                 }
+
             }
-            return handleVideo(video, msg, voiceChannel);
+            //return handleVideo(video, msg, voiceChannel);
+            return distube.play(msg, searchString);
         }
     }
     else if (command === "search" || command === "sc") {
@@ -361,6 +370,7 @@ bot.on("message", async (msg) => {
         else if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
             const playlist = await youtube.getPlaylist(url);
             const videos = await playlist.getVideos();
+            distube.play(msg, url)
             for (const video of Object.values(videos)) {
                 const video2 = await youtube.getVideoByID(video.id); 
                 await handleVideo(video2, msg, voiceChannel, true); 
@@ -371,14 +381,14 @@ bot.on("message", async (msg) => {
                 var video = await youtube.getVideo(url);
             } catch (error) {
                 try {
-                    var videos = await youtube.searchVideos(searchString, 10);
+                    var videos = await distube.search(searchString);
                     let index = 0;
                     if(!videos.length) {
                         return msg.channel.send("🆘  **|**  No matches found");
                     }
                     res = msg.channel.send(`
 __**Song selection**__
-${videos.map(video2 => `**\`${++index}\`  |**  ${video2.title}`).join("\n")}
+${videos.map(video2 => `**\`${++index}\`  |**  ${video2.name}`).join("\n")}
 Please provide a value to select one of the search results ranging from 1-10.
 					`);
                     try {
@@ -392,7 +402,7 @@ Please provide a value to select one of the search results ranging from 1-10.
                         return msg.channel.send("Invalid Value 🤭 ");
                     }
                     const videoIndex = parseInt(response.first().content);
-                    var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
+                    var video = videos[videoIndex - 1];
                 } catch (err) {
                     console.error(err);
                     res = await msg.channel.send("🆘  **|**  No matches found");
@@ -400,64 +410,73 @@ Please provide a value to select one of the search results ranging from 1-10.
                     return res;
                 }
             }
-            return handleVideo(video, msg, voiceChannel);
+            return distube.play(msg, video);
         }
 
     } if (command === "skip") {
-        if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
-        else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
-        else {
-            serverQueue.connection.dispatcher.end("Skipped");
-            res = await await msg.channel.send("⏭️  **|**  Skipped");
-        }
+        // if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+        // else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        // else {
+        //     serverQueue.connection.dispatcher.end("Skipped");
+        //     res = await await msg.channel.send("⏭️  **|**  Skipped");
+        // }
+        distube.skip(msg);
+        res = await await msg.channel.send("⏭️  **|**  Skipped");
     } else if (command === "stop"){
-        if(!serverQueue) return;
-        if (serverQueue.playing === false) res = await msg.channel.send("Music is currently paused ⏸ | Please un-pause (/play) and then stop 😇");
-        else if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
-        else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
-        else {
-            serverQueue.songs = [];
-            serverQueue.connection.dispatcher.end("Stopped");
-            res = await msg.channel.send("⏹️  **|**  Stopped"); 
-        }
+        // if(!serverQueue) return;
+        // if (serverQueue.playing === false) res = await msg.channel.send("Music is currently paused ⏸ | Please un-pause (/play) and then stop 😇");
+        // else if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
+        // else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        // else {
+        //     serverQueue.songs = [];
+        //     serverQueue.connection.dispatcher.end("Stopped");
+        //     res = await msg.channel.send("⏹️  **|**  Stopped"); 
+        // }
+        distube.stop(msg);
+        res = await msg.channel.send("⏹️  **|**  Stopped"); 
     } else if (command === "volume" || command === "vol") {
         if (!msg.member.voice.channel) res = await msg.channel.send("You need to be in an active voice channel to play music 😴");
-        else if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else if (!distube.isPlaying(msg)) res = await msg.channel.send("There is nothing playing 🤭 ");
         else if (!args[1]) res = await msg.channel.send(`The current volume is: **\`${serverQueue.volume}%\`**`);
         else if (isNaN(args[1]) || args[1] > 100) res = await msg.channel.send("Volume in range **1** - **100**.");
         else {
-            serverQueue.volume = args[1];
-            serverQueue.connection.dispatcher.setVolume(args[1] / 100);
+            distube.setVolume(msg, args[1]);
             res = await msg.channel.send(`Volume set to : **\`${args[1]}%\`**`);      
         }
-    } else if (command === "nowplaying" || command === "np") {
+    } else if (command === "nowplaying" || command === "np") { //find a nice way to implement this
         if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
         else res = await msg.channel.send(`🎶  **|**  Now Playing: **\`${serverQueue.songs[0].title}\`**`);    
-    } else if (command === "queue" || command === "q") {
-        if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
-        else res = await msg.channel.send(`
-__**Song Queue**__
-${serverQueue.songs.map(song => `**-** ${song.title}`).join("\n")}
-**Now Playing: \`${serverQueue.songs[0].title}\`**
-        `);
+    } else if (command === "queue" || command === "q") { // better formatting required
+        if (!distube.isPlaying(msg)) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else {
+            let info = distube.getQueue(msg);
+            res = await msg.channel.send('__**Song Queue**__\n' + info.songs.map((song, id) =>
+                `**${id+1}**. [${song.name}](${song.url}) - \`${song.formattedDuration}\``
+            ).join("\n"));
+        }
     } else if (command === "pause") {
-        if (serverQueue && serverQueue.playing) {
-            serverQueue.playing = false;
-            serverQueue.connection.dispatcher.pause();
+        if (distube.isPaused(msg)){
+            res = await msg.channel.send("Already paused 🤭");
+        }
+        else if (!distube.isPaused(msg)) {
+            distube.pause(msg);
             res = await msg.channel.send("⏸  **|**  Paused.");                   
         }
-        else res = await msg.channel.send("There is nothing playing 🤭");
+        else res = await msg.channel.send("There is nothing queued 🤭");  
     } else if (command === "resume") {
-        if (serverQueue && !serverQueue.playing) {
-            serverQueue.playing = true;
-            serverQueue.connection.dispatcher.resume();
+        if (!distube.isPaused(msg)){
+            res = await msg.channel.send("There is nothing paused 🤭");  
+        }
+        else if (distube.isPaused(msg)) {
+            distube.resume(msg);
             res = await msg.channel.send("▶  **|**  Resume.");          
         }
-        else res = await msg.channel.send("There is nothing playing 🤭");      
+        else res = await msg.channel.send("There is nothing queued 🤭");      
     } else if (command === "loop") {
-        if (serverQueue) {
-            serverQueue.loop = !serverQueue.loop;
-            res = await msg.channel.send(`🔁 **|** Loop ${serverQueue.loop === true ? "enabled" : "disabled"}!`);       
+        if(distube.isPlaying(msg)){
+            let mode = distube.setRepeatMode(msg, parseInt(args[0]));
+            mode = mode ? mode == 2 ? "Repeat queue" : "Repeat song" : "Off";
+            res = await msg.channel.send("Set repeat mode to `" + mode + "`");
         }
         else res = await msg.channel.send("There is nothing playing 🤭");   
     } else if (command === "bruh"){
@@ -608,5 +627,34 @@ function play(guild, song) {
         }
     });
 }
+
+// Queue status template
+const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
+
+// DisTube event listeners, more in the documentation page
+distube
+    .on("playSong", (message, queue, song) => message.channel.send(
+        `Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user}\n${status(queue)}`
+    ))
+    .on("addSong", (message, queue, song) => message.channel.send(
+        `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
+    ))
+    .on("playList", (message, queue, playlist, song) => message.channel.send(
+        `Play \`${playlist.name}\` playlist (${playlist.songs.length} songs).\nRequested by: ${song.user}\nNow playing \`${song.name}\` - \`${song.formattedDuration}\`\n${status(queue)}`
+    ))
+    .on("addList", (message, queue, playlist) => message.channel.send(
+        `Added \`${playlist.name}\` playlist (${playlist.songs.length} songs) to queue\n${status(queue)}`
+    ))
+    // DisTubeOptions.searchSongs = true
+    .on("searchResult", (message, result) => {
+        let i = 0;
+        message.channel.send(`**Choose an option from below**\n${result.map(song => `**${++i}**. ${song.name} - \`${song.formattedDuration}\``).join("\n")}\n*Enter anything else or wait 60 seconds to cancel*`);
+    })
+    // DisTubeOptions.searchSongs = true
+    .on("searchCancel", (message) => message.channel.send(`Searching canceled`))
+    .on("error", (message, e) => {
+        console.error(e)
+        message.channel.send("An error encountered: " + e);
+    });
 
 bot.login(TOKEN);

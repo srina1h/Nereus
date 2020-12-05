@@ -10,20 +10,22 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.0",
-    "bootstrap": "^4.5.2",
-    "chart.js": "^2.9.3",
+    "bootstrap": "^4.5.3",
+    "chart.js": "^2.9.4",
     "cookie-parser": "^1.4.5",
-    "discord.js": "^12.2.0",
+    "discord.js": "^12.5.1",
+    "distube": "^2.8.6",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
     "express-session": "^1.17.1",
+    "ffmpeg": "0.0.4",
     "node-opus": "^0.3.3",
     "opusscript": "0.0.7",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
-    "server": "^1.0.29",
+    "server": "^1.0.31",
     "server.js": "^1.0.0",
     "simple-youtube-api": "^5.2.1",
-    "ytdl-core": "^3.1.2"
+    "ytdl-core": "^3.4.2"
   }
 }
