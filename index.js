@@ -146,14 +146,14 @@ const PREFIX = process.env.PREFIX;
 const GOOGLE_API_KEY = process.env.YTAPI_KEY;
 const ADMIN_ID = process.env.ADMIN_ID;
 const ADMIN_ID_LIST = ADMIN_ID.split(';');
+const COOKIE = process.env.COOKIE;
 
 const bot = new Client({
     disableMentions: "all"
 });
 
-const distube = new DisTube(bot, { searchSongs: false, emitNewSongOnly: true });
+const distube = new DisTube(bot, { searchSongs: false, emitNewSongOnly: true ,youtubeCookie: COOKIE });
 
-const distube1 = new DisTube(bot, )
 
 const getUptime = () => {
     let totalSeconds = (bot.uptime / 1000);
@@ -299,7 +299,10 @@ bot.on("message", async (msg) => {
                 console.error(err);
                 res = await msg.channel.send("🆘 | Sorry, cannot play Lo-Fi Music now!");
             }
-            return distube.play(msg, "lofi");
+            var connection = await voiceChannel.join();
+            connection.voice.setSelfDeaf(true);
+            const string_new = "lofi"
+            return distube.play(msg, string_new);
         }
 
     }
@@ -350,6 +353,8 @@ bot.on("message", async (msg) => {
 
             }
             //return handleVideo(video, msg, voiceChannel);
+            var connection = await voiceChannel.join();
+            connection.voice.setSelfDeaf(true);
             return distube.play(msg, searchString);
         }
     }
@@ -444,14 +449,17 @@ Please provide a value to select one of the search results ranging from 1-10.
             res = await msg.channel.send(`Volume set to : **\`${args[1]}%\`**`);      
         }
     } else if (command === "nowplaying" || command === "np") { //find a nice way to implement this
-        if (!serverQueue) res = await msg.channel.send("There is nothing playing 🤭 ");
-        else res = await msg.channel.send(`🎶  **|**  Now Playing: **\`${serverQueue.songs[0].title}\`**`);    
+        if (!distube.isPlaying(msg)) res = await msg.channel.send("There is nothing playing 🤭 ");
+        else{
+            let info = distube.getQueue(msg);
+            res = await msg.channel.send(`🎶  **|**  Now Playing: **\`${info.songs[0].name}\`**`);
+        }    
     } else if (command === "queue" || command === "q") { // better formatting required
         if (!distube.isPlaying(msg)) res = await msg.channel.send("There is nothing playing 🤭 ");
         else {
             let info = distube.getQueue(msg);
             res = await msg.channel.send('__**Song Queue**__\n' + info.songs.map((song, id) =>
-                `**${id+1}**. [${song.name}](${song.url}) - \`${song.formattedDuration}\``
+                `**${id+1}**. ${song.name} - \`${song.formattedDuration}\``
             ).join("\n"));
         }
     } else if (command === "pause") {
@@ -631,14 +639,54 @@ function play(guild, song) {
 // Queue status template
 const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
 
+const newembed = new MessageEmbed()
+        .setTitle('Check out the Nereus git repository!')
+        .setAuthor('Nereus', 'https://i.imgur.com/1rWjEeO.png', 'https://github.com/srinathsrinivasan1/Nereus')
+        .setColor('0x00AE86')
+        .setFooter('© Nereus o.O', 'https://i.imgur.com/1rWjEeO.png')
+        .setThumbnail('https://i.imgur.com/1rWjEeO.png')
+        .setTimestamp()
+        .setURL('https://github.com/srinathsrinivasan1/Nereus')
 // DisTube event listeners, more in the documentation page
 distube
-    .on("playSong", (message, queue, song) => message.channel.send(
-        `Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user}\n${status(queue)}`
-    ))
-    .on("addSong", (message, queue, song) => message.channel.send(
-        `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
-    ))
+    .on("playSong", (message, queue, song) => {
+        const copyembed = {
+            ...newembed,
+            title:`${song.name}`,
+            url:`${song.url}`,
+            description:':notes: **Now Playing**',
+            thumbnail:{url:`${song.thumbnail}`},
+            fields:[{
+                name:`Duration: ${song.formattedDuration} `,
+                value:"\u200b"
+            }]
+        };
+        // copyembed.setTitle(`${song.name}`)
+        // .setURL(`${song.url}`)
+        // .setThumbnail(`${song.thumbnail}`)
+        // .addField(`Duration: ${song.formattedDuration} `, "\u200b");
+
+
+        //console.log({embed: copyembed});
+        //message.channel.send(
+        //`Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user}\n${status(queue)}`
+        message.channel.send({embed:copyembed});
+    }
+    )
+    .on("addSong", (message, queue, song) => {
+        const copyembed = {
+            ...newembed,
+            title:`${song.name}`,
+            url:`${song.url}`,
+            
+            thumbnail:{url:`${song.thumbnail}`},
+            footer:{},
+            timestamp: '',
+            description:'🎉 **Added to Queue !**'
+        };
+        message.channel.send({embed:copyembed});
+    }
+    )
     .on("playList", (message, queue, playlist, song) => message.channel.send(
         `Play \`${playlist.name}\` playlist (${playlist.songs.length} songs).\nRequested by: ${song.user}\nNow playing \`${song.name}\` - \`${song.formattedDuration}\`\n${status(queue)}`
     ))
@@ -655,6 +703,12 @@ distube
     .on("error", (message, e) => {
         console.error(e)
         message.channel.send("An error encountered: " + e);
+    })
+    .on("initQueue", queue => {
+        queue.autoplay = false;
+        queue.volume = 100;
+    })
+    .on("empty", message => {
+        message.channel.send("Leaving as channel is empty :zzz:");
     });
-
 bot.login(TOKEN);

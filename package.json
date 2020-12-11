@@ -14,7 +14,7 @@
     "chart.js": "^2.9.4",
     "cookie-parser": "^1.4.5",
     "discord.js": "^12.5.1",
-    "distube": "^2.8.6",
+    "distube": "^2.8.7",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
     "express-session": "^1.17.1",
@@ -26,6 +26,6 @@
     "server": "^1.0.31",
     "server.js": "^1.0.0",
     "simple-youtube-api": "^5.2.1",
-    "ytdl-core": "^3.4.2"
+    "ytdl-core": "github:skick1234/node-ytdl-core"
   }
 }
