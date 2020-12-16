@@ -152,7 +152,7 @@ const bot = new Client({
     disableMentions: "all"
 });
 
-const distube = new DisTube(bot, { searchSongs: false, emitNewSongOnly: true ,youtubeCookie: COOKIE });
+const distube = new DisTube(bot, { searchSongs: false, emitNewSongOnly: true, youttubeCookie: COOKIE, leaveOnFinish: true, leaveOnEmpty: true});
 
 
 const getUptime = () => {
@@ -338,25 +338,25 @@ bot.on("message", async (msg) => {
                 await handleVideo(video2, msg, voiceChannel, true); 
             }
             res = await msg.channel.send(`🎉  **|**  Playlist: **\`${playlist.title}\`** has been added to queue`);}   
-        else {
-            try {
-                var video = await youtube.getVideo(url);
-            } catch (error) {
-                try {
-                    var videos = await youtube.searchVideos(searchString, 10);
-                    var video = await youtube.getVideoByID(videos[0].id);
-                    if (!video) res = await msg.channel.send("🆘  **|**  No matches found !");
-                } catch (err) {
-                    console.error(err);
-                    res = await msg.channel.send("🆘  **|**  No matches found !");          
-                }
+        // else {
+        //     try {
+        //         var video = await youtube.getVideo(url);
+        //     } catch (error) {
+        //         try {
+        //             var videos = await youtube.searchVideos(searchString, 10);
+        //             var video = await youtube.getVideoByID(videos[0].id);
+        //             if (!video) res = await msg.channel.send("🆘  **|**  No matches found !");
+        //         } catch (err) {
+        //             console.error(err);
+        //             res = await msg.channel.send("🆘  **|**  No matches found !");          
+        //         }
 
-            }
+        //     }
             //return handleVideo(video, msg, voiceChannel);
-            var connection = await voiceChannel.join();
-            connection.voice.setSelfDeaf(true);
-            return distube.play(msg, searchString);
-        }
+        var connection = await voiceChannel.join();
+        connection.voice.setSelfDeaf(true);
+        return distube.play(msg,searchString);
+        
     }
     else if (command === "search" || command === "sc") {
         const voiceChannel = msg.member.voice.channel;
@@ -702,7 +702,7 @@ distube
     .on("searchCancel", (message) => message.channel.send(`Searching canceled`))
     .on("error", (message, e) => {
         console.error(e)
-        message.channel.send("An error encountered: " + e);
+        message.channel.send("🆘  **|**  Cannot find match !");
     })
     .on("initQueue", queue => {
         queue.autoplay = false;
