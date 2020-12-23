@@ -20,13 +20,15 @@
 
 • A Discord bot written in Discord.js that uses the YouTube API to queue music requested by the user.<br>
 • <b>[Invite](https://discord.com/oauth2/authorize?client_id=734801580548685884&permissions=8&scope=bot)</b> the bot to your own server.<br>
-• Currently used in <b>150+ servers</b> and has been officially <b>[verified](https://support.discord.com/hc/en-us/articles/360040720412-Bot-Verification-and-Data-Whitelisting)</b> by Discord.
+• Currently used in <b>400+ servers</b> and has been officially <b>[verified](https://support.discord.com/hc/en-us/articles/360040720412-Bot-Verification-and-Data-Whitelisting)</b> by Discord.
 
 </td>
 </tr>
 </table>
 
+## Support the project by donating here:
 
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S62X9F3)
 
 ## Usage:
 * /help for the supported commands.
@@ -50,3 +52,5 @@
 ## Icon Credits:
 
 Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon.com.](https://www.flaticon.com/)
+
+
