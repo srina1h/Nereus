@@ -13,7 +13,6 @@
 </a>
 </p>
 
-
 <table>
 <tr>
 <td>
@@ -31,20 +30,25 @@
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S62X9F3)
 
 ## Usage:
-* /help for the supported commands.
+
+- /help for the supported commands.
 
 <p align='center'>
 <img src="./screenshots/help_menu.png" width="450">
 </p>
 
 ## Installation:
+
 #### If you want to tweak the code to your needs, follow these steps. If you simply want to use the bot for your own server, [invite](https://discord.com/oauth2/authorize?client_id=734801580548685884&permissions=8&scope=bot) it.
+
 1. Install [ffmpeg](https://ffmpeg.org/download.html).
-2. Run ``` npm -i install ``` in the project directory.
-3. Set the environment variables in the .env file.
-4. Run ``` node . ``` to start the bot.
+2. Run `npm -i install` in the project directory.
+3. Copy the contents of `.env.example` file into a `.env` file
+4. Set the environment variables in the .env file.
+5. Run `node .` to start the bot.
 
 ## Format for environment variables (.env):
+
 1. Prefix you want for the bot.
 2. Token of the bot (from Discord Developer Portal).
 3. YouTube API Key from Google Cloud Platform.
@@ -52,5 +56,3 @@
 ## Icon Credits:
 
 Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon.com.](https://www.flaticon.com/)
-
-
