@@ -27,8 +27,11 @@
 
 ## Support the project by donating here:
 
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S62X9F3)
-
+<p align='center'>
+<a href="https://ko-fi.com/S6S62X9F3">
+    <img src="https://www.ko-fi.com/img/githubbutton_sm.svg" alt="Ko-Fi" >
+</a>
+</p>
 ## Usage:
 
 - /help for the supported commands.
