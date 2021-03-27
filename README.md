@@ -32,6 +32,7 @@
     <img src="https://www.ko-fi.com/img/githubbutton_sm.svg" alt="Ko-Fi" >
 </a>
 </p>
+
 ## Usage:
 
 - /help for the supported commands.
