@@ -2,14 +2,14 @@
 <h1 align="center">Nereus: A Music & LoFi Bot for Discord</h1>
 
 <p align='center'>
-<a href="https://github.com/srinathsrinivasan1/Nereus/issues">
-    <img src="https://img.shields.io/github/issues/srinathsrinivasan1/Nereus?color=blueviolet&label=Issues&logo=github" alt="GitHub Issues" >
+<a href="https://github.com/srina1h/Nereus/issues">
+    <img src="https://img.shields.io/github/issues/srina1h/Nereus?color=blueviolet&label=Issues&logo=github" alt="GitHub Issues" >
 </a>
-<a href="https://github.com/srinathsrinivasan1/Nereus/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/srinathsrinivasan1/Nereus?color=blue&label=License&style=flat-square" alt="License" >
+<a href="https://github.com/srina1h/Nereus/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/srina1h/Nereus?color=blue&label=License&style=flat-square" alt="License" >
 </a>
-<a href="https://github.com/srinathsrinivasan1/Nereus/stargazers">
-    <img src="https://img.shields.io/github/stars/srinathsrinivasan1/Nereus?color=red&logo=github&style=flat-square" alt="GitHub Stars" >
+<a href="https://github.com/srina1h/Nereus/stargazers">
+    <img src="https://img.shields.io/github/stars/srina1h/Nereus?color=red&logo=github&style=flat-square" alt="GitHub Stars" >
 </a>
 </p>
 
